@@ -6,8 +6,8 @@ public class ExportData : ModuleRules
 {
 	public ExportData(ReadOnlyTargetRules Target) : base(Target)
 	{
-		
-		PublicIncludePaths.AddRange(
+        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        PublicIncludePaths.AddRange(
 			new string[] {
 				"ExportData/Public"
 				// ... add public include paths required here ...
@@ -17,7 +17,7 @@ public class ExportData : ModuleRules
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
-				"ExportData/Private",
+				"ExportData/Private"
 				// ... add other private include paths required here ...
 			}
 			);
@@ -31,7 +31,7 @@ public class ExportData : ModuleRules
 			}
 			);
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Navmesh" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Navmesh" ,"NavigationSystem"});
 
         PrivateDependencyModuleNames.AddRange(
 			new string[]

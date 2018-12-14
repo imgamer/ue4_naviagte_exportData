@@ -11,12 +11,14 @@
 #include "LevelEditor.h"
 
 #if WITH_RECAST
-#include "AI/Navigation/RecastNavMesh.h"
-#include "AI/Navigation/RecastNavMeshGenerator.h"
-#include "AI/Navigation/PImplRecastNavMesh.h"
-#include "AI/Navigation/NavMeshBoundsVolume.h"
+
+#include "NavMesh/RecastNavMesh.h"
+#include "NavMesh/RecastNavMeshGenerator.h"
+#include "NavMesh/PImplRecastNavMesh.h"
+#include "NavMesh/NavMeshBoundsVolume.h"
+#include "NavigationSystem.h"
 #include "Detour/DetourNavMesh.h"
-#include"Recast/Recast.h"
+#include "Recast/Recast.h"
 #include "EngineUtils.h"
 #endif
 
@@ -83,6 +85,8 @@ void FExportDataModule::ShutdownModule()
 	FExportDataCommands::Unregister();
 }
 
+class ARecastNavMeshTrick : public ARecastNavMesh { public: const FPImplRecastNavMesh* GetRecastNavMeshImplTrick() const { return GetRecastNavMeshImpl(); } };
+
 void FExportDataModule::PluginButtonClicked()
 {
 	// Put your "OnButtonClicked" stuff here
@@ -115,9 +119,10 @@ void FExportDataModule::PluginButtonClicked()
 	//	}
 	//}
 
+
 	FWorldContext &EditorContext = GEditor->GetEditorWorldContext();
 	UWorld * InWorld = EditorContext.World();
-	UNavigationSystem* navigationSystem = InWorld->GetNavigationSystem();
+	UNavigationSystemV1* navigationSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(InWorld);
 	TArray<FNavDataConfig> supportedAgents = navigationSystem->GetSupportedAgents();
 	for (int32 agents = 0; agents < supportedAgents.Num(); agents++)
 	{
@@ -125,8 +130,9 @@ void FExportDataModule::PluginButtonClicked()
 		ANavigationData* NavData = navigationSystem->GetNavDataForProps(dataConfig);
 		if (NavData && !NavData->IsPendingKill())
 		{
-			ARecastNavMesh * RecastNavData = Cast<ARecastNavMesh>(NavData);
-			dtNavMesh* NavMesh = RecastNavData->GetRecastNavMeshImpl()->GetRecastMesh();
+			ARecastNavMeshTrick * RecastNavData = Cast<ARecastNavMeshTrick>(NavData);
+			const FPImplRecastNavMesh* tempRN = RecastNavData->GetRecastNavMeshImplTrick();
+			const dtNavMesh* NavMesh = tempRN->GetRecastMesh();
 			char text[32];
 			snprintf(text, 32, "%d.navmesh", agents);
 			if (NavMesh != NULL)
